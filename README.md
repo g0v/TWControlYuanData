@@ -15,3 +15,5 @@ ControlYuanCrawler
 
 糾舉案文 http://www.cy.gov.tw/sp.asp?xdURL=./di/edoc/db2.asp&edoc_no=4&ctNode=913
 
+Require package: BeautifulSoup4 and lxml
+

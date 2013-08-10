@@ -5,7 +5,13 @@ import sys
 import urllib
 import json
 import codecs
-from bs4 import BeautifulSoup
+try:
+    import lxml
+    from bs4 import BeautifulSoup
+except Exception, e:
+    print "Please install package BeautifulSoup and lxml."
+    exit()
+
 
 default_encoding = 'utf-8'
 if sys.getdefaultencoding() != default_encoding:
@@ -13,7 +19,8 @@ if sys.getdefaultencoding() != default_encoding:
     sys.setdefaultencoding(default_encoding)
 
 
-DEBUG = 1
+DEBUG = True
+IS_DUMP_FILE = False
 CAHCE_FILE = "./dump.log"
 FETCH_URL = 'http://www.cy.gov.tw/sp.asp?xdUrl=.%2FDI%2Fedoc%2Fdb2.asp&ctNode=911&edoc_no=2&doQuery=1&intYear=&mm=&input_edoc_no=&case_pty=&input_edoc_unit=&keyword=&submit=%E6%9F%A5%E8%A9%A2'
 DOWNLOAD_FOLDER = '../data/'
@@ -23,11 +30,16 @@ def getDomain(url):
     return reObj.group()
 
 def fetchPage(url):
+    
     if DEBUG and os.path.exists(CAHCE_FILE):
-        rc = fetchPageFromFile(CAHCE_FILE)
+        content = fetchPageFromFile(CAHCE_FILE)
     else:
-        rc = fetchPageFromURL(url)
-    return rc
+        content = fetchPageFromURL(url)
+    if IS_DUMP_FILE:
+        fd = open(CAHCE_FILE,'w')
+        fd.write(content)
+        fd.close
+    return content
 
 def fetchPageFromURL(url):
     return urllib.urlopen(url).read()
@@ -49,6 +61,7 @@ def normalizeContent(content):
     content = content.replace(' ', '')
     content = content.replace('\t', '')
     content = content.replace('\n', '')
+    content = content.replace('\r', '')
     return content
 
 def insertCase(caseTable, content, index):
