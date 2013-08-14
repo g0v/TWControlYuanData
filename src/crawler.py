@@ -23,7 +23,7 @@ CAHCE_FILE = "./dump.log"
 FETCH_URL = 'http://www.cy.gov.tw/sp.asp?xdUrl=.%2FDI%2Fedoc%2Fdb2.asp&ctNode=911&edoc_no=2&doQuery=1&intYear=&mm=&input_edoc_no=&case_pty=&input_edoc_unit=&keyword=&submit=%E6%9F%A5%E8%A9%A2'
 DOWNLOAD_FOLDER = '../data/'
 DOCUMENT_FOLDER = '../data/doc'
-CONTROL_YUAN_URL = "http://www.cy.gov.tw/sp.asp?xdURL=./di/edoc/db2.asp&ctNode={0:d}&doQuery=1&cPage={1:d}&edoc_no={2:d}"
+CONTROL_YUAN_URL = "http://www.cy.gov.tw/sp.asp?xdURL=./di/edoc/db2.asp&ctNode={0:d}&doQuery=1&cPage={1:d}&edoc_no={2:d}&intYear={3:s}"
 EDOC_MAPPING = {910: 1, 911: 2, 912: 3, 913: 4}
 
 def getDomain(url):
@@ -50,12 +50,7 @@ def fetchPageFromFile(file):
 
 def contentDownloader(caseType, year = '', page = 1):
     edoc = EDOC_MAPPING[caseType]
-    url = CONTROL_YUAN_URL.format(caseType, page, edoc)
-
-    if year != '':
-        url += "&intYear="
-        url += year
-
+    url = CONTROL_YUAN_URL.format(caseType, page, edoc, year)
     content = fetchPage(url)
     return content
 
@@ -78,6 +73,7 @@ def page():
 
 def normalizeContent(content):
     content = content.encode('utf-8')
+    content = content.replace('\\', '/')
     content = content.replace(' ', '')
     content = content.replace('\t', '')
     content = content.replace('\n', '')
