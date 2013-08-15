@@ -1,6 +1,7 @@
 # encoding: utf-8
 import os
 import re
+import getopt
 import sys
 import urllib
 import json
@@ -40,6 +41,22 @@ def fetchPage(url):
         fd.write(content)
         fd.close
     return content
+
+def fetchFileByList(table, year):
+    for i in table:
+        if i['docx'] != '':
+            fetchFileFromUrl(i['docx'], year)
+
+        if i['pdf'] != '':
+            fetchFileFromUrl(i['pdf'], year)
+
+def fetchFileFromUrl(url, year):
+    tmp = urllib.unquote(url).split('/')
+    path = os.path.join(DOCUMENT_FOLDER, year)
+    if not os.access(path, os.F_OK):
+        os.makedirs(path)
+    filename = os.path.join(path, tmp[-1])
+    urllib.urlretrieve(url, filename)
 
 def fetchPageFromURL(url):
     return urllib.urlopen(url).read()
@@ -148,13 +165,15 @@ def dumpToJson(table, caseType, year, page):
     fd.close()
     pass
 
-def crawlerByYear(caseType, year):
+def crawlerByYear(caseType, year, download=False):
     print "Download case: {0:d}, year: {1:s}, page: {2:d}".format(caseType, year, 1)
     content = contentDownloader(caseType, year)
     parser = createParser(content)
     pageNum = pageParser(parser, content)
     table = caseParser(parser, content)
     if len(table) > 0:
+        if download:
+            fetchFileByList(table, year)
         dumpToJson(table, caseType, year, 1)
 
     for idx in xrange(2, pageNum + 1):
@@ -163,28 +182,38 @@ def crawlerByYear(caseType, year):
         parser = createParser(content)
         table = caseParser(parser, content)
         if len(table) > 0:
+            if download:
+                fetchFileByList(table, year)
             dumpToJson(table, caseType, year, idx)
 
     pass
 
-def crawlerByType(caseType):
-    # First time
-    #print "Download page: {0:d}".format(idx)
+def crawlerByType(caseType, download=False):
     content = contentDownloader(caseType)
     parser = createParser(content)
     years = yearParser(parser, content)
 
     for year in years:
-        crawlerByYear(caseType, year)
+        crawlerByYear(caseType, year, download)
 
     pass
 
 def main(argv):
-    crawlerByType(910)
-    crawlerByType(911)
-    crawlerByType(912)
-    crawlerByType(913)
-    pass
+    try:
+        download = False
+        opts, args = getopt.getopt(argv[1:], 'd')
+        for opt, arg in opts:
+            if opt in '-d':
+                download = True
+
+        crawlerByType(910, download)
+        crawlerByType(911, download)
+        crawlerByType(912, download)
+        crawlerByType(913, download)
+
+    except getopt.GetoptError:
+        print "getopt error"
+        sys.exit(1)
 
 if __name__ == '__main__':
     FETCH_DOMAIN = getDomain(FETCH_URL)
