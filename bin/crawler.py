@@ -42,17 +42,17 @@ def fetchPage(url):
         fd.close
     return content
 
-def fetchFileByList(table, year):
+def fetchFileByList(table, caseType, year):
     for i in table:
         if i['docx'] != '':
-            fetchFileFromUrl(i['docx'], year)
+            fetchFileFromUrl(i['docx'], caseType, year)
 
         if i['pdf'] != '':
-            fetchFileFromUrl(i['pdf'], year)
+            fetchFileFromUrl(i['pdf'], caseType, year)
 
-def fetchFileFromUrl(url, year):
+def fetchFileFromUrl(url, caseType, year):
     tmp = urllib.unquote(url).split('/')
-    path = os.path.join(DOCUMENT_FOLDER, year)
+    path = os.path.join(DOCUMENT_FOLDER, str(caseType), year)
     if not os.access(path, os.F_OK):
         os.makedirs(path)
     filename = os.path.join(path, tmp[-1])
@@ -173,7 +173,7 @@ def crawlerByYear(caseType, year, download=False):
     table = caseParser(parser, content)
     if len(table) > 0:
         if download:
-            fetchFileByList(table, year)
+            fetchFileByList(table, caseType, year)
         dumpToJson(table, caseType, year, 1)
 
     for idx in xrange(2, pageNum + 1):
@@ -183,7 +183,7 @@ def crawlerByYear(caseType, year, download=False):
         table = caseParser(parser, content)
         if len(table) > 0:
             if download:
-                fetchFileByList(table, year)
+                fetchFileByList(table, caseType, year)
             dumpToJson(table, caseType, year, idx)
 
     pass
