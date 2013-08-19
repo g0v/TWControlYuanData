@@ -5,6 +5,7 @@ setup(
     name='TWControlYuanData',
     author='Kent Huang',
     version='0.0.1',
+    license='MIT',
     description='Crawler to get tw control yuan data',
     long_description=open('README.md').read(),
     scripts=['bin/crawler.py'],
